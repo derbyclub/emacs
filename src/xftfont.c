@@ -283,7 +283,7 @@ xftfont_open (struct frame *f, Lisp_Object entity, int pixel_size)
   if (i < 0) i = 0;
   FcPatternAddInteger (pat, FC_SLANT, i);
   FcPatternAddInteger (pat, FC_WIDTH, FONT_WIDTH_NUMERIC (entity));
-  FcPatternAddDouble (pat, FC_PIXEL_SIZE, pixel_size);
+  FcPatternAddDouble (pat, FC_PIXEL_SIZE, pixel_size * FRAME_RES_Y(f) / 72.0);
   val = AREF (entity, FONT_FAMILY_INDEX);
   if (! NILP (val))
     FcPatternAddString (pat, FC_FAMILY, (FcChar8 *) SDATA (SYMBOL_NAME (val)));
