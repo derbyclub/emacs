@@ -16667,7 +16667,6 @@ redisplay_window (Lisp_Object window, bool just_this_one_p)
 #endif
 
   display_mode_lines(XWINDOW (FRAME_MINIBUF_WINDOW (f)));
-  if (MINI_WINDOW_P (w)) w->update_mode_line = true;
 
   if (!just_this_one_p
       && REDISPLAY_SOME_P ()
@@ -16730,8 +16729,7 @@ redisplay_window (Lisp_Object window, bool just_this_one_p)
 	       y < yb;
 	       y += row->height, ++row)
 	    blank_row (w, row, y);
-          update_mode_line = true;
-	  goto done;
+	  goto finish_scroll_bars;
 	}
 
       clear_glyph_matrix (w->desired_matrix);
@@ -23390,10 +23388,7 @@ display_mode_lines (struct window *w)
       struct window *sel_w = XWINDOW (old_selected_window);
 
       /* Select mode line face based on the real selected window.  */
-      display_mode_line (w, CURRENT_MODE_LINE_FACE_ID_3 (sel_w, sel_w, w),
-			 NILP (window_mode_line_format)
-			 ? BVAR (current_buffer, mode_line_format)
-			 : window_mode_line_format);
+      display_mode_line (w, MODE_LINE_INACTIVE_FACE_ID, build_string (""));
       ++n;
     }
 

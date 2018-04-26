@@ -4886,20 +4886,19 @@ mark_window_cursors_off (struct window *w)
 bool
 window_wants_mode_line (struct window *w)
 {
-    return 0;
   Lisp_Object window_mode_line_format =
     window_parameter (w, Qmode_line_format);
 
-  return MINI_WINDOW_P (w) ? 1 : 0;
-  /* return ((WINDOW_LEAF_P (w) */
-  /*          && !MINI_WINDOW_P (w) */
-  /*          && !WINDOW_PSEUDO_P (w) */
-  /*          && !EQ (window_mode_line_format, Qnone) */
-  /*          && (!NILP (window_mode_line_format) */
-  /*              || !NILP (BVAR (XBUFFER (WINDOW_BUFFER (w)), mode_line_format))) */
-  /*          && WINDOW_PIXEL_HEIGHT (w) > WINDOW_FRAME_LINE_HEIGHT (w)) */
-  /*         ? 1 */
-  /*         : 0); */
+  return ((WINDOW_LEAF_P (w)
+           && !WINDOW_BOTTOMMOST_P(w)
+           && !MINI_WINDOW_P (w)
+           && !WINDOW_PSEUDO_P (w)
+           && !EQ (window_mode_line_format, Qnone)
+           && (!NILP (window_mode_line_format)
+               || !NILP (BVAR (XBUFFER (WINDOW_BUFFER (w)), mode_line_format)))
+           && WINDOW_PIXEL_HEIGHT (w) > WINDOW_FRAME_LINE_HEIGHT (w))
+          ? 1
+          : 0);
 }
 
 
@@ -4931,9 +4930,7 @@ window_wants_header_line (struct window *w)
                > (window_wants_mode_line (w)
                ? 2 * WINDOW_FRAME_LINE_HEIGHT (w)
                : WINDOW_FRAME_LINE_HEIGHT (w))))
-          ||
-          /* (MINI_WINDOW_P (w) && (current_buffer != XBUFFER (WINDOW_BUFFER (w)))) */
-          MINI_WINDOW_P (w)
+          || MINI_WINDOW_P (w)
           ? 1
           : 0);
 }
