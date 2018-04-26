@@ -4930,7 +4930,10 @@ window_wants_header_line (struct window *w)
            && (WINDOW_PIXEL_HEIGHT (w)
                > (window_wants_mode_line (w)
                ? 2 * WINDOW_FRAME_LINE_HEIGHT (w)
-               : WINDOW_FRAME_LINE_HEIGHT (w)))) || MINI_WINDOW_P (w)
+               : WINDOW_FRAME_LINE_HEIGHT (w))))
+          ||
+          /* (MINI_WINDOW_P (w) && (current_buffer != XBUFFER (WINDOW_BUFFER (w)))) */
+          MINI_WINDOW_P (w)
           ? 1
           : 0);
 }

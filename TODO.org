@@ -1,9 +1,13 @@
 #+TITLE: TODO
 
-* TODO modeline update still not enough
+* DONE modeline update still not enough
 
-1. create/delete frames
+1. [X] create/delete frames
 
-2. ESC quit
+2. [X] ESC quit
 
-* TODO modeline segments should always display real buffer
+* DONE modeline segments should always display real buffer
+
+1. [X] segment color? (esc save file doesn't update color)
+
+2. [X] switch frame doesn't update (only happens when echo area shows something, like direnv)

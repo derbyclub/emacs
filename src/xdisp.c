@@ -16666,6 +16666,7 @@ redisplay_window (Lisp_Object window, bool just_this_one_p)
   *w->desired_matrix->method = 0;
 #endif
 
+  display_mode_lines(XWINDOW (FRAME_MINIBUF_WINDOW (f)));
   if (MINI_WINDOW_P (w)) w->update_mode_line = true;
 
   if (!just_this_one_p
