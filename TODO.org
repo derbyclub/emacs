@@ -1,0 +1,9 @@
+#+TITLE: TODO
+
+* TODO modeline update still not enough
+
+1. create/delete frames
+
+2. ESC quit
+
+* TODO modeline segments should always display real buffer

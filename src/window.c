@@ -4236,13 +4236,13 @@ resize_frame_windows (struct frame *f, int size, bool horflag, bool pixelwise)
 			    : (size
 			       - ((FRAME_HAS_MINIBUF_P (f)
 				   && !FRAME_MINIBUF_ONLY_P (f))
-				  ? FRAME_LINE_HEIGHT (f) : 0)),
+				  ? 2 * FRAME_LINE_HEIGHT (f) : 0)),
 			    unit);
       new_size = new_pixel_size / unit;
     }
   else
     {
-      new_size = max (size - (!horflag
+      new_size = max (size - 2 * (!horflag
 			      && FRAME_HAS_MINIBUF_P (f)
 			      && !FRAME_MINIBUF_ONLY_P (f)),
 		      1);
@@ -4316,8 +4316,8 @@ resize_frame_windows (struct frame *f, int size, bool horflag, bool pixelwise)
       else
 	{
 	  /* Are we sure we always want 1 line here?  */
-	  m->total_lines = 1;
-	  m->pixel_height = FRAME_LINE_HEIGHT (f);
+	  m->total_lines = 2;
+	  m->pixel_height = 2 * FRAME_LINE_HEIGHT (f);
 	  m->top_line = r->top_line + r->total_lines;
 	  m->pixel_top = r->pixel_top + r->pixel_height;
 	}
@@ -4751,8 +4751,8 @@ grow_mini_window (struct window *w, int delta, bool pixelwise)
 	  w->top_line = r->top_line + r->total_lines;
 	  /* Make sure the mini-window has always at least one line.  */
 	  w->pixel_height = max (w->pixel_height + pixel_height,
-				 FRAME_LINE_HEIGHT (f));
-	  w->total_lines = max (w->total_lines + line_height, 1);
+				 FRAME_LINE_HEIGHT (f) * 2);
+	  w->total_lines = max (w->total_lines + line_height, 2);
 
 	  /* Enforce full redisplay of the frame.  */
 	  /* FIXME: Shouldn't window--resize-root-window-vertically do it?  */
@@ -4778,7 +4778,7 @@ shrink_mini_window (struct window *w, bool pixelwise)
   eassert (MINI_WINDOW_P (w));
 
   height = pixelwise ? w->pixel_height : w->total_lines;
-  unit = pixelwise ? FRAME_LINE_HEIGHT (f) : 1;
+  unit = pixelwise ? 2 * FRAME_LINE_HEIGHT (f) : 2;
   if (height > unit)
     {
       root = FRAME_ROOT_WINDOW (f);
@@ -4793,9 +4793,9 @@ shrink_mini_window (struct window *w, bool pixelwise)
 
 	  /* Shrink the mini-window.  */
 	  w->top_line = r->top_line + r->total_lines;
-	  w->total_lines = 1;
+	  w->total_lines = 2;
 	  w->pixel_top = r->pixel_top + r->pixel_height;
-	  w->pixel_height = FRAME_LINE_HEIGHT (f);
+	  w->pixel_height = 2 * FRAME_LINE_HEIGHT (f);
 	  /* Enforce full redisplay of the frame.  */
 	  /* FIXME: Shouldn't window--resize-root-window-vertically do it?  */
 	  fset_redisplay (f);
@@ -4886,18 +4886,20 @@ mark_window_cursors_off (struct window *w)
 bool
 window_wants_mode_line (struct window *w)
 {
+    return 0;
   Lisp_Object window_mode_line_format =
     window_parameter (w, Qmode_line_format);
 
-  return ((WINDOW_LEAF_P (w)
-	   && !MINI_WINDOW_P (w)
-	   && !WINDOW_PSEUDO_P (w)
-	   && !EQ (window_mode_line_format, Qnone)
-	   && (!NILP (window_mode_line_format)
-	       || !NILP (BVAR (XBUFFER (WINDOW_BUFFER (w)), mode_line_format)))
-	   && WINDOW_PIXEL_HEIGHT (w) > WINDOW_FRAME_LINE_HEIGHT (w))
-	  ? 1
-	  : 0);
+  return MINI_WINDOW_P (w) ? 1 : 0;
+  /* return ((WINDOW_LEAF_P (w) */
+  /*          && !MINI_WINDOW_P (w) */
+  /*          && !WINDOW_PSEUDO_P (w) */
+  /*          && !EQ (window_mode_line_format, Qnone) */
+  /*          && (!NILP (window_mode_line_format) */
+  /*              || !NILP (BVAR (XBUFFER (WINDOW_BUFFER (w)), mode_line_format))) */
+  /*          && WINDOW_PIXEL_HEIGHT (w) > WINDOW_FRAME_LINE_HEIGHT (w)) */
+  /*         ? 1 */
+  /*         : 0); */
 }
 
 
@@ -4921,17 +4923,16 @@ window_wants_header_line (struct window *w)
     window_parameter (w, Qheader_line_format);
 
   return ((WINDOW_LEAF_P (w)
-	   && !MINI_WINDOW_P (w)
-	   && !WINDOW_PSEUDO_P (w)
-	   && !EQ (window_header_line_format, Qnone)
-	   && (!NILP (window_header_line_format)
-	       || !NILP (BVAR (XBUFFER (WINDOW_BUFFER (w)), header_line_format)))
-	   && (WINDOW_PIXEL_HEIGHT (w)
-	       > (window_wants_mode_line (w)
-		  ? 2 * WINDOW_FRAME_LINE_HEIGHT (w)
-		  : WINDOW_FRAME_LINE_HEIGHT (w))))
-	  ? 1
-	  : 0);
+           && !WINDOW_PSEUDO_P (w)
+           && !EQ (window_header_line_format, Qnone)
+           && (!NILP (window_header_line_format)
+               || !NILP (BVAR (XBUFFER (WINDOW_BUFFER (w)), header_line_format)))
+           && (WINDOW_PIXEL_HEIGHT (w)
+               > (window_wants_mode_line (w)
+               ? 2 * WINDOW_FRAME_LINE_HEIGHT (w)
+               : WINDOW_FRAME_LINE_HEIGHT (w)))) || MINI_WINDOW_P (w)
+          ? 1
+          : 0);
 }
 
 /* Return number of lines of text (not counting mode lines) in W.  */
@@ -4952,6 +4953,10 @@ window_internal_height (struct window *w)
 
       if (window_wants_header_line (w))
 	--ht;
+    }
+  else
+    {
+      --ht;
     }
 
   return ht;

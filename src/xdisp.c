@@ -1368,12 +1368,14 @@ pos_visible_p (struct window *w, ptrdiff_t charpos, int *x, int *y,
   if (window_wants_header_line (w))
     {
       Lisp_Object window_header_line_format
-	= window_parameter (w, Qheader_line_format);
+	= MINI_WINDOW_P (w) ? window_parameter (w, Qmode_line_format)
+	: window_parameter (w, Qheader_line_format);
 
       w->header_line_height
 	= display_mode_line (w, HEADER_LINE_FACE_ID,
 			     NILP (window_header_line_format)
-			     ? BVAR (current_buffer, header_line_format)
+	                     ? (MINI_WINDOW_P (w) ? BVAR (current_buffer, mode_line_format)
+			       : BVAR (current_buffer, header_line_format))
 			     : window_header_line_format);
     }
 
@@ -11290,7 +11292,7 @@ resize_mini_window (struct window *w, bool exact_p)
 
       /* Find out the height of the text in the window.  */
       if (it.line_wrap == TRUNCATE)
-	height = unit;
+	height = 2 * unit;
       else
 	{
 	  last_height = 0;
@@ -13912,7 +13914,7 @@ redisplay_internal (void)
   bool consider_all_windows_p;
 
   /* True means redisplay has to redisplay the miniwindow.  */
-  bool update_miniwindow_p = false;
+  bool update_miniwindow_p = true;
 
   TRACE ((stderr, "redisplay_internal %d\n", redisplaying_p));
 
@@ -16664,6 +16666,8 @@ redisplay_window (Lisp_Object window, bool just_this_one_p)
   *w->desired_matrix->method = 0;
 #endif
 
+  if (MINI_WINDOW_P (w)) w->update_mode_line = true;
+
   if (!just_this_one_p
       && REDISPLAY_SOME_P ()
       && !w->redisplay
@@ -16721,11 +16725,12 @@ redisplay_window (Lisp_Object window, bool just_this_one_p)
 	  struct glyph_row *row;
 	  int y;
 
-	  for (y = 0, row = w->desired_matrix->rows;
+	  for (row = w->desired_matrix->rows + 1, y = row->height;
 	       y < yb;
 	       y += row->height, ++row)
 	    blank_row (w, row, y);
-	  goto finish_scroll_bars;
+          update_mode_line = true;
+	  goto done;
 	}
 
       clear_glyph_matrix (w->desired_matrix);
@@ -23394,12 +23399,15 @@ display_mode_lines (struct window *w)
   if (window_wants_header_line (w))
     {
       Lisp_Object window_header_line_format
-	= window_parameter (w, Qheader_line_format);
+	= MINI_WINDOW_P (w) ? window_parameter (w, Qmode_line_format)
+	: window_parameter (w, Qheader_line_format);
 
-      display_mode_line (w, HEADER_LINE_FACE_ID,
-			 NILP (window_header_line_format)
-			 ? BVAR (current_buffer, header_line_format)
-			 : window_header_line_format);
+      w->header_line_height
+	= display_mode_line (w, HEADER_LINE_FACE_ID,
+			     NILP (window_header_line_format)
+	                     ? (MINI_WINDOW_P (w) ? BVAR (current_buffer, mode_line_format)
+			       : BVAR (current_buffer, header_line_format))
+			     : window_header_line_format);
       ++n;
     }
 
@@ -33231,14 +33239,14 @@ init_xdisp (void)
       r->pixel_top = r->top_line * FRAME_LINE_HEIGHT (f);
       r->total_cols = FRAME_COLS (f);
       r->pixel_width = r->total_cols * FRAME_COLUMN_WIDTH (f);
-      r->total_lines = FRAME_TOTAL_LINES (f) - 1 - FRAME_TOP_MARGIN (f);
+      r->total_lines = FRAME_TOTAL_LINES (f) - 2 - FRAME_TOP_MARGIN (f);
       r->pixel_height = r->total_lines * FRAME_LINE_HEIGHT (f);
 
-      m->top_line = FRAME_TOTAL_LINES (f) - 1;
+      m->top_line = FRAME_TOTAL_LINES (f) - 2;
       m->pixel_top = m->top_line * FRAME_LINE_HEIGHT (f);
       m->total_cols = FRAME_COLS (f);
       m->pixel_width = m->total_cols * FRAME_COLUMN_WIDTH (f);
-      m->total_lines = 1;
+      m->total_lines = 2;
       m->pixel_height = m->total_lines * FRAME_LINE_HEIGHT (f);
 
       scratch_glyph_row.glyphs[TEXT_AREA] = scratch_glyphs;

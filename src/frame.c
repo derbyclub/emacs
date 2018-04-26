@@ -890,7 +890,7 @@ make_frame (bool mini_p)
 
   rw->total_cols = 10;
   rw->pixel_width = rw->total_cols * FRAME_COLUMN_WIDTH (f);
-  rw->total_lines = mini_p ? 9 : 10;
+  rw->total_lines = mini_p ? 8 : 10;
   rw->pixel_height = rw->total_lines * FRAME_LINE_HEIGHT (f);
 
   if (mini_p)
@@ -899,8 +899,8 @@ make_frame (bool mini_p)
       mw->pixel_top = rw->pixel_height;
       mw->total_cols = rw->total_cols;
       mw->pixel_width = rw->pixel_width;
-      mw->total_lines = 1;
-      mw->pixel_height = FRAME_LINE_HEIGHT (f);
+      mw->total_lines = 2;
+      mw->pixel_height = 2 * FRAME_LINE_HEIGHT (f);
     }
 
   /* Choose a buffer for the frame's root window.  */
