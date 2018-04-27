@@ -4890,13 +4890,13 @@ window_wants_mode_line (struct window *w)
     window_parameter (w, Qmode_line_format);
 
   return ((WINDOW_LEAF_P (w)
-           && !WINDOW_BOTTOMMOST_P(w)
            && !MINI_WINDOW_P (w)
            && !WINDOW_PSEUDO_P (w)
            && !EQ (window_mode_line_format, Qnone)
            && (!NILP (window_mode_line_format)
                || !NILP (BVAR (XBUFFER (WINDOW_BUFFER (w)), mode_line_format)))
-           && WINDOW_PIXEL_HEIGHT (w) > WINDOW_FRAME_LINE_HEIGHT (w))
+           && WINDOW_PIXEL_HEIGHT (w) > WINDOW_FRAME_LINE_HEIGHT (w)
+           && !WINDOW_BOTTOMMOST_P(w))
           ? 1
           : 0);
 }
